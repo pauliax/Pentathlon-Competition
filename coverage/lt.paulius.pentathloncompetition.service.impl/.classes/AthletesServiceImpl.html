@@ -1,0 +1,299 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: AthletesServiceImpl</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">lt.paulius.pentathloncompetition.service.impl</a> ]
+</div>
+
+<h1>Coverage Summary for Class: AthletesServiceImpl (lt.paulius.pentathloncompetition.service.impl)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AthletesServiceImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    62.5%
+  </span>
+  <span class="absValue">
+    (10/ 16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    83.8%
+  </span>
+  <span class="absValue">
+    (88/ 105)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;package lt.paulius.pentathloncompetition.service.impl;
+<i>2</i>&nbsp;
+<i>3</i>&nbsp;import lombok.Data;
+<i>4</i>&nbsp;import lt.paulius.pentathloncompetition.PentathlonCompetitionApplication;
+<i>5</i>&nbsp;import lt.paulius.pentathloncompetition.entity.*;
+<i>6</i>&nbsp;import lt.paulius.pentathloncompetition.service.api.AthletesService;
+<i>7</i>&nbsp;import lt.paulius.pentathloncompetition.service.api.FileReader;
+<i>8</i>&nbsp;import lt.paulius.pentathloncompetition.service.api.ScoreCalculator;
+<i>9</i>&nbsp;import lt.paulius.pentathloncompetition.utils.DateTimeUtils;
+<i>10</i>&nbsp;import lt.paulius.pentathloncompetition.utils.FinalScoreComparatorAsc;
+<i>11</i>&nbsp;import lt.paulius.pentathloncompetition.utils.TotalScoreComparatorDesc;
+<i>12</i>&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+<i>13</i>&nbsp;import org.springframework.stereotype.Service;
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;import javax.annotation.PostConstruct;
+<i>16</i>&nbsp;import java.text.ParseException;
+<i>17</i>&nbsp;import java.text.SimpleDateFormat;
+<i>18</i>&nbsp;import java.util.*;
+<i>19</i>&nbsp;
+<i>20</i>&nbsp;@Service
+<b class="nc"><i>21</i>&nbsp;@Data</b>
+<i>22</i>&nbsp;public class AthletesServiceImpl implements AthletesService {
+<i>23</i>&nbsp;
+<b class="nc"><i>24</i>&nbsp;    private FileReader fileReader;</b>
+<i>25</i>&nbsp;
+<b class="fc"><i>26</i>&nbsp;    private List&lt;Athlete&gt; athletes;</b>
+<i>27</i>&nbsp;
+<b class="nc"><i>28</i>&nbsp;    private ScoreCalculator fencingScoreCalculator;</b>
+<i>29</i>&nbsp;
+<b class="nc"><i>30</i>&nbsp;    private ScoreCalculator swimmingScoreCalculator;</b>
+<i>31</i>&nbsp;
+<b class="nc"><i>32</i>&nbsp;    private ScoreCalculator ridingScoreCalculator;</b>
+<i>33</i>&nbsp;
+<b class="nc"><i>34</i>&nbsp;    private ScoreCalculator shootingScoreCalculator;</b>
+<i>35</i>&nbsp;
+<i>36</i>&nbsp;    public static final int POINTS_DIFFERENCE = 3;
+<i>37</i>&nbsp;
+<i>38</i>&nbsp;    public static final int SECONDS_GAP = 3;
+<i>39</i>&nbsp;
+<i>40</i>&nbsp;    @Autowired
+<b class="fc"><i>41</i>&nbsp;    public AthletesServiceImpl(FileReader fileReader) {</b>
+<b class="fc"><i>42</i>&nbsp;        this.fileReader = fileReader;</b>
+<b class="fc"><i>43</i>&nbsp;    }</b>
+<i>44</i>&nbsp;
+<i>45</i>&nbsp;    @PostConstruct
+<i>46</i>&nbsp;    public void init(){
+<b class="fc"><i>47</i>&nbsp;        List&lt;List&lt;String&gt;&gt; fileContent = fileReader.readFile(PentathlonCompetitionApplication.FILE_PATH);</b>
+<b class="fc"><i>48</i>&nbsp;        this.athletes = getAthletes(fileContent);</b>
+<i>49</i>&nbsp;
+<b class="fc"><i>50</i>&nbsp;        if (this.athletes != null) {</b>
+<b class="fc"><i>51</i>&nbsp;            fencingScoreCalculator = new FencingScoreCalculator(athletes.size());</b>
+<b class="fc"><i>52</i>&nbsp;            swimmingScoreCalculator = new SwimmingScoreCalculator();</b>
+<b class="fc"><i>53</i>&nbsp;            ridingScoreCalculator = new RidingScoreCalculator();</b>
+<b class="fc"><i>54</i>&nbsp;            shootingScoreCalculator = new ShootingScoreCalculator();</b>
+<i>55</i>&nbsp;        }
+<b class="fc"><i>56</i>&nbsp;    }</b>
+<i>57</i>&nbsp;
+<i>58</i>&nbsp;    @Override
+<i>59</i>&nbsp;    public List&lt;Athlete&gt; getAthletes(List&lt;List&lt;String&gt;&gt; fileContent) {
+<b class="fc"><i>60</i>&nbsp;        if (!validFileContent(fileContent)) {</b>
+<b class="nc"><i>61</i>&nbsp;            return null;</b>
+<i>62</i>&nbsp;        }
+<i>63</i>&nbsp;
+<b class="fc"><i>64</i>&nbsp;        List&lt;Athlete&gt; athletes = new ArrayList&lt;&gt;();</b>
+<i>65</i>&nbsp;
+<b class="fc"><i>66</i>&nbsp;        for (List&lt;String&gt; row : fileContent) {</b>
+<b class="fc"><i>67</i>&nbsp;            String athleteName = row.get(0);</b>
+<b class="fc"><i>68</i>&nbsp;            String fencingVictories = row.get(1);</b>
+<b class="fc"><i>69</i>&nbsp;            String swimmingTime = row.get(2);</b>
+<b class="fc"><i>70</i>&nbsp;            String ridingKnockingDown = row.get(3);</b>
+<b class="fc"><i>71</i>&nbsp;            String ridingRefusal = row.get(4);</b>
+<b class="fc"><i>72</i>&nbsp;            String ridingDisobedienceLeading = row.get(5);</b>
+<b class="fc"><i>73</i>&nbsp;            String shootingTargetScore = row.get(6);</b>
+<b class="fc"><i>74</i>&nbsp;            String runTime = row.get(7);</b>
+<i>75</i>&nbsp;
+<b class="fc"><i>76</i>&nbsp;            Fencing fencing = new Fencing(Integer.valueOf(fencingVictories));</b>
+<b class="fc"><i>77</i>&nbsp;            Swimming swimming = new Swimming(swimmingTime);</b>
+<b class="fc"><i>78</i>&nbsp;            Riding riding = new Riding(Integer.valueOf(ridingKnockingDown), Integer.valueOf(ridingRefusal),</b>
+<b class="fc"><i>79</i>&nbsp;                    Integer.valueOf(ridingDisobedienceLeading));</b>
+<b class="fc"><i>80</i>&nbsp;            Shooting shooting = new Shooting(Integer.valueOf(shootingTargetScore));</b>
+<b class="fc"><i>81</i>&nbsp;            Run run = new Run(runTime);</b>
+<i>82</i>&nbsp;
+<b class="fc"><i>83</i>&nbsp;            Athlete athlete = new Athlete(athleteName, fencing, swimming, riding, shooting, run);</b>
+<i>84</i>&nbsp;
+<b class="fc"><i>85</i>&nbsp;            athletes.add(athlete);</b>
+<b class="fc"><i>86</i>&nbsp;        }</b>
+<i>87</i>&nbsp;
+<b class="fc"><i>88</i>&nbsp;        return athletes;</b>
+<i>89</i>&nbsp;    }
+<i>90</i>&nbsp;
+<i>91</i>&nbsp;    /**
+<i>92</i>&nbsp;     * Facade structural design pattern.
+<i>93</i>&nbsp;     *
+<i>94</i>&nbsp;     * It is used to hide the complexity of the results calculation.
+<i>95</i>&nbsp;     * First, it sets the total score of athletes after first 4 events.
+<i>96</i>&nbsp;     * Then, sorts the athletes by total score descending.
+<i>97</i>&nbsp;     * Then, calculates and sets the concluding event time.
+<i>98</i>&nbsp;     * Then, calculates and sets the final score.
+<i>99</i>&nbsp;     * Then, sorts the athletes by the final score ascending.
+<i>100</i>&nbsp;     * Then, sets the final place of every athlete.
+<i>101</i>&nbsp;     *
+<i>102</i>&nbsp;     * @return the list of athletes with calculated results
+<i>103</i>&nbsp;     */
+<i>104</i>&nbsp;    @Override
+<i>105</i>&nbsp;    public List&lt;Athlete&gt; calculateResults() {
+<b class="fc"><i>106</i>&nbsp;        if (athletes == null) {</b>
+<b class="nc"><i>107</i>&nbsp;            return null;</b>
+<i>108</i>&nbsp;        }
+<i>109</i>&nbsp;
+<b class="fc"><i>110</i>&nbsp;        setTotalScore();</b>
+<i>111</i>&nbsp;
+<b class="fc"><i>112</i>&nbsp;        athletes.sort(new TotalScoreComparatorDesc());</b>
+<i>113</i>&nbsp;
+<b class="fc"><i>114</i>&nbsp;        setConcludingEventTime();</b>
+<i>115</i>&nbsp;
+<b class="fc"><i>116</i>&nbsp;        setFinalScore();</b>
+<i>117</i>&nbsp;
+<b class="fc"><i>118</i>&nbsp;        athletes.sort(new FinalScoreComparatorAsc());</b>
+<i>119</i>&nbsp;
+<b class="fc"><i>120</i>&nbsp;        setPlaces();</b>
+<i>121</i>&nbsp;
+<b class="fc"><i>122</i>&nbsp;        return athletes;</b>
+<i>123</i>&nbsp;    }
+<i>124</i>&nbsp;
+<i>125</i>&nbsp;    private boolean validFileContent(List&lt;List&lt;String&gt;&gt; fileContent) {
+<b class="fc"><i>126</i>&nbsp;        if (fileContent == null) {</b>
+<b class="nc"><i>127</i>&nbsp;            return false;</b>
+<i>128</i>&nbsp;        }
+<i>129</i>&nbsp;
+<i>130</i>&nbsp;        // TODO: Add more validation checks
+<i>131</i>&nbsp;
+<b class="fc"><i>132</i>&nbsp;        return true;</b>
+<i>133</i>&nbsp;    }
+<i>134</i>&nbsp;
+<i>135</i>&nbsp;    private void setTotalScore() {
+<b class="fc"><i>136</i>&nbsp;        for (Athlete athlete : athletes) {</b>
+<b class="fc"><i>137</i>&nbsp;            int totalScore = 0;</b>
+<i>138</i>&nbsp;
+<b class="fc"><i>139</i>&nbsp;            totalScore += fencingScoreCalculator.calculateScore(athlete);</b>
+<b class="fc"><i>140</i>&nbsp;            totalScore += swimmingScoreCalculator.calculateScore(athlete);</b>
+<b class="fc"><i>141</i>&nbsp;            totalScore += ridingScoreCalculator.calculateScore(athlete);</b>
+<b class="fc"><i>142</i>&nbsp;            totalScore += shootingScoreCalculator.calculateScore(athlete);</b>
+<i>143</i>&nbsp;
+<b class="fc"><i>144</i>&nbsp;            athlete.setTotalScore(totalScore);</b>
+<b class="fc"><i>145</i>&nbsp;        }</b>
+<b class="fc"><i>146</i>&nbsp;    }</b>
+<i>147</i>&nbsp;
+<i>148</i>&nbsp;    private void setConcludingEventTime() {
+<b class="fc"><i>149</i>&nbsp;        if (athletes.size() &gt; 0) {</b>
+<b class="fc"><i>150</i>&nbsp;            Athlete currentLeader = athletes.get(0);</b>
+<b class="fc"><i>151</i>&nbsp;            currentLeader.setConcludingEventTime(&quot;00:00.0&quot;);</b>
+<b class="fc"><i>152</i>&nbsp;            int leaderPoints = currentLeader.getTotalScore();</b>
+<i>153</i>&nbsp;
+<b class="fc"><i>154</i>&nbsp;            for (int i = 1; i &lt; athletes.size(); i++) {</b>
+<b class="fc"><i>155</i>&nbsp;                Athlete athlete = athletes.get(i);</b>
+<b class="fc"><i>156</i>&nbsp;                int pointsDiff = leaderPoints - athlete.getTotalScore();</b>
+<i>157</i>&nbsp;
+<b class="fc"><i>158</i>&nbsp;                if (pointsDiff &lt; 0) {</b>
+<b class="nc"><i>159</i>&nbsp;                    throw new IllegalStateException(&quot;Athlete scores are not sorted!&quot;);</b>
+<i>160</i>&nbsp;                }
+<i>161</i>&nbsp;
+<b class="fc"><i>162</i>&nbsp;                SimpleDateFormat sdf = new SimpleDateFormat(PentathlonCompetitionApplication.TIME_FORMAT);</b>
+<i>163</i>&nbsp;
+<i>164</i>&nbsp;                try {
+<b class="fc"><i>165</i>&nbsp;                    Date start = sdf.parse(&quot;00:00.0&quot;);</b>
+<b class="fc"><i>166</i>&nbsp;                    int secondsToAdd = pointsDiff / POINTS_DIFFERENCE * SECONDS_GAP;</b>
+<i>167</i>&nbsp;
+<b class="fc"><i>168</i>&nbsp;                    start = DateTimeUtils.addSeconds(start, secondsToAdd);</b>
+<b class="fc"><i>169</i>&nbsp;                    String concludingEventTime = DateTimeUtils.convertDateToString(start,</b>
+<i>170</i>&nbsp;                            PentathlonCompetitionApplication.TIME_FORMAT);
+<b class="fc"><i>171</i>&nbsp;                    athletes.get(i).setConcludingEventTime(concludingEventTime);</b>
+<b class="nc"><i>172</i>&nbsp;                } catch (ParseException e) {</b>
+<b class="nc"><i>173</i>&nbsp;                    e.printStackTrace();</b>
+<b class="fc"><i>174</i>&nbsp;                }</b>
+<i>175</i>&nbsp;            }
+<i>176</i>&nbsp;        }
+<b class="fc"><i>177</i>&nbsp;    }</b>
+<i>178</i>&nbsp;
+<i>179</i>&nbsp;    private void setFinalScore() {
+<b class="fc"><i>180</i>&nbsp;        for (Athlete athlete : athletes) {</b>
+<b class="fc"><i>181</i>&nbsp;            if (athlete.getRun() == null</b>
+<b class="fc"><i>182</i>&nbsp;                    || athlete.getRun().getTime() == null</b>
+<b class="fc"><i>183</i>&nbsp;                    || athlete.getConcludingEventTime() == null) {</b>
+<b class="nc"><i>184</i>&nbsp;                continue;</b>
+<i>185</i>&nbsp;            }
+<i>186</i>&nbsp;
+<b class="fc"><i>187</i>&nbsp;            String concludingEventTime = athlete.getConcludingEventTime();</b>
+<b class="fc"><i>188</i>&nbsp;            String runTime = athlete.getRun().getTime();</b>
+<b class="fc"><i>189</i>&nbsp;            String finalScoreTime = DateTimeUtils.addDates(concludingEventTime, runTime);</b>
+<i>190</i>&nbsp;
+<b class="fc"><i>191</i>&nbsp;            athlete.setFinalScoreTime(finalScoreTime);</b>
+<b class="fc"><i>192</i>&nbsp;        }</b>
+<b class="fc"><i>193</i>&nbsp;    }</b>
+<i>194</i>&nbsp;
+<i>195</i>&nbsp;    private void setPlaces() {
+<b class="fc"><i>196</i>&nbsp;        int firstIndex = 0, lastIndex = 0;</b>
+<i>197</i>&nbsp;
+<b class="fc"><i>198</i>&nbsp;        for (int i = 0; i &lt; athletes.size(); i++) {</b>
+<b class="fc"><i>199</i>&nbsp;            if (i != athletes.size() - 1</b>
+<b class="fc"><i>200</i>&nbsp;                    &amp;&amp; athletes.get(i).getFinalScoreTime().equals(athletes.get(i + 1).getFinalScoreTime())) {</b>
+<b class="nc"><i>201</i>&nbsp;                lastIndex = i + 1;</b>
+<i>202</i>&nbsp;            } else {
+<b class="fc"><i>203</i>&nbsp;                for (int j = firstIndex; j &lt;= lastIndex; j++) {</b>
+<b class="fc"><i>204</i>&nbsp;                    if (firstIndex != lastIndex) {</b>
+<b class="nc"><i>205</i>&nbsp;                        String place = (firstIndex + 1) + &quot;-&quot; + (lastIndex + 1);</b>
+<b class="nc"><i>206</i>&nbsp;                        athletes.get(j).setPlace(place);</b>
+<b class="nc"><i>207</i>&nbsp;                    } else {</b>
+<b class="fc"><i>208</i>&nbsp;                        String place = String.valueOf(firstIndex + 1);</b>
+<b class="fc"><i>209</i>&nbsp;                        athletes.get(j).setPlace(place);</b>
+<i>210</i>&nbsp;                    }
+<i>211</i>&nbsp;                }
+<b class="fc"><i>212</i>&nbsp;                firstIndex = lastIndex = i + 1;</b>
+<i>213</i>&nbsp;            }
+<i>214</i>&nbsp;        }
+<b class="fc"><i>215</i>&nbsp;    }</b>
+<i>216</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2019-07-24 19:45</div>
+</div>
+</body>
+</html>

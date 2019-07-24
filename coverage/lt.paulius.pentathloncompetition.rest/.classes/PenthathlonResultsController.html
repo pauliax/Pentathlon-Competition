@@ -1,0 +1,112 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: PenthathlonResultsController</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">lt.paulius.pentathloncompetition.rest</a> ]
+</div>
+
+<h1>Coverage Summary for Class: PenthathlonResultsController (lt.paulius.pentathloncompetition.rest)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PenthathlonResultsController</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/ 4)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;package lt.paulius.pentathloncompetition.rest;
+<i>2</i>&nbsp;
+<i>3</i>&nbsp;import lt.paulius.pentathloncompetition.entity.Athlete;
+<i>4</i>&nbsp;import lt.paulius.pentathloncompetition.service.api.AthletesService;
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+<i>7</i>&nbsp;import org.springframework.http.MediaType;
+<i>8</i>&nbsp;import org.springframework.web.bind.annotation.GetMapping;
+<i>9</i>&nbsp;import org.springframework.web.bind.annotation.RequestMapping;
+<i>10</i>&nbsp;import org.springframework.web.bind.annotation.RestController;
+<i>11</i>&nbsp;
+<i>12</i>&nbsp;import java.util.List;
+<i>13</i>&nbsp;
+<i>14</i>&nbsp;@RestController
+<i>15</i>&nbsp;@RequestMapping(&quot;/api&quot;)
+<i>16</i>&nbsp;public class PenthathlonResultsController {
+<i>17</i>&nbsp;
+<i>18</i>&nbsp;    private AthletesService athletesService;
+<i>19</i>&nbsp;
+<i>20</i>&nbsp;    @Autowired
+<b class="fc"><i>21</i>&nbsp;    public PenthathlonResultsController(AthletesService athletesService) {</b>
+<b class="fc"><i>22</i>&nbsp;        this.athletesService = athletesService;</b>
+<b class="fc"><i>23</i>&nbsp;    }</b>
+<i>24</i>&nbsp;
+<i>25</i>&nbsp;    @GetMapping(value = &quot;/leaderboard&quot;, produces = MediaType.APPLICATION_JSON_VALUE)
+<i>26</i>&nbsp;    public List&lt;Athlete&gt; getLeaderboard() {
+<b class="fc"><i>27</i>&nbsp;        return athletesService.calculateResults();</b>
+<i>28</i>&nbsp;    }
+<i>29</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2019-07-24 19:45</div>
+</div>
+</body>
+</html>
